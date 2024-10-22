@@ -8,8 +8,8 @@ const {
 } = require("./students-service");
 
 const handleGetAllStudents = asyncHandler(async (req, res) => {
-    const { studentId,name, email, role, systemAcess, lastlogin } = req.query;
-    const students = await getAllStudents({ studentId,name, email, role, systemAcess, lastlogin });
+    const payload = req.body;
+    const students = await getAllStudents({ ...payload });
     res.json({ students });
 });
 
@@ -20,9 +20,12 @@ const handleAddStudent = asyncHandler(async (req, res) => {
 });
 
 const handleUpdateStudent = asyncHandler(async (req, res) => {
-    const { id: studentId } = req.params;
-    const payload = req.body;
-    const message = await updateStudent({ ...payload, studentId });
+    const { id }  = req.params;
+    const { payload } = req.body;
+    const { reviewerId } = req.user;
+    const message = await updateStudent({ id, ...payload, reviewerId });
+    
+
     res.json(message);
 });
 
@@ -32,11 +35,11 @@ const handleGetStudentDetail = asyncHandler(async (req, res) => {
     res.json(student);
 });
 
-const handleStudentStatus = asyncHandler(async (req, res) => {
-    const { id: studentId } = req.params;
-    const { status } = req.body;
-    const { id: reviewerId } = req.user;
-    const message = await setStudentStatus({ studentId, status, reviewerId });
+const handleStudentStatus = asyncHandler(async (req, res ) => {
+    const payload = req.body;
+    const { id } = req.params;
+    const { reviewerId } = req.user;
+    const message = await setStudentStatus({payload, id, reviewerId });
     res.json(message);
 });
 

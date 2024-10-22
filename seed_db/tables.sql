@@ -327,7 +327,7 @@ DECLARE
     _admissionDt DATE;
     _roll INTEGER;
 BEGIN
-    _roleId = 3;
+    _roleId := 3;
     _userId := COALESCE((data ->>'userId')::INTEGER, NULL);
     _name := COALESCE(data->>'name', NULL);
     _gender := COALESCE(data->>'gender', NULL);
@@ -364,26 +364,29 @@ BEGIN
         SELECT id from users WHERE role_id = 1 ORDER BY id ASC LIMIT 1 INTO _reporterId;
     END IF;
 
-    IF NOT EXISTS(SELECT 1 FROM users WHERE id = _userId) THEN
+    
+    
+        IF NOT EXISTS(SELECT 1 FROM users WHERE id = _userId) THEN
 
-        IF EXISTS(SELECT 1 FROM users WHERE email = _email) THEN
-        RETURN QUERY
-            SELECT NULL::INTEGER, false, 'Email already exists', NULL::TEXT;
-        RETURN;
+            IF EXISTS(SELECT 1 FROM users WHERE email = _email) THEN
+            RETURN QUERY
+                SELECT NULL::INTEGER, false, 'Email already exists', NULL::TEXT;
+            RETURN;
+            END IF;
+
+            INSERT INTO users (name,email,role_id,created_dt,reporter_id)
+            VALUES (_name,_email,_roleId,now(),_reporterId) RETURNING id INTO _userId;
+
+            INSERT INTO user_profiles
+            (user_id,gender,phone,dob,admission_dt,class_name,section_name,roll,current_address,permanent_address,father_name,father_phone,mother_name,mother_phone,guardian_name,guardian_phone,relation_of_guardian)
+            VALUES
+            (_userId,_gender,_phone,_dob,_admissionDt,_className,_sectionName,_roll,_currentAddress,_permanentAddress,_fatherName,_fatherPhone,_motherName,_motherPhone,_guardianName,_guardianPhone,_relationOfGuardian);
+
+            RETURN QUERY
+                SELECT _userId, true, 'Student added successfully', NULL;
+            RETURN;
         END IF;
-
-        INSERT INTO users (name,email,role_id,created_dt,reporter_id)
-        VALUES (_name,_email,_roleId,now(),_reporterId) RETURNING id INTO _userId;
-
-        INSERT INTO user_profiles
-        (user_id,gender,phone,dob,admission_dt,class_name,section_name,roll,current_address,permanent_address,father_name,father_phone,mother_name,mother_phone,guardian_name,guardian_phone,relation_of_guardian)
-        VALUES
-        (_userId,_gender,_phone,_dob,_admissionDt,_className,_sectionName,_roll,_currentAddress,_permanentAddress,_fatherName,_fatherPhone,_motherName,_motherPhone,_guardianName,_guardianPhone,_relationOfGuardian);
-
-        RETURN QUERY
-            SELECT _userId, true, 'Student added successfully', NULL;
-        RETURN;
-    END IF;
+    
 
 
     --update user tables

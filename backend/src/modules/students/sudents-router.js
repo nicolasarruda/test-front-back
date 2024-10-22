@@ -6,6 +6,6 @@ router.get("", studentController.handleGetAllStudents);
 router.post("", studentController.handleAddStudent);
 router.get("/:id", studentController.handleGetStudentDetail);
 router.post("/:id/status", studentController.handleStudentStatus);
-router.put("/:id", studentController.handleUpdateStudent);
+router.put("/edit/:id", studentController.handleUpdateStudent);
 
 module.exports = { studentsRoutes: router };
